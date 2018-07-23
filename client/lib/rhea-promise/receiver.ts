@@ -80,6 +80,10 @@ export class Receiver {
     return result;
   }
 
+  /**
+   * Removes the receiver and it's underlying session from the internal map.
+   * @returns {void} void
+   */
   remove(): void {
     if (this._receiver) {
       this._receiver.remove();
@@ -105,14 +109,16 @@ export class Receiver {
         onClose = (context: rhea.EventContext) => {
           this._receiver.removeListener(ReceiverEvents.receiverClose, onClose);
           process.nextTick(() => {
-            debug("Resolving the promise as the amqp receiver has been closed.");
+            debug("[%s] Resolving the promise as the amqp receiver has been closed.",
+              this.connection.id);
             resolve();
           });
         };
 
         onError = (context: rhea.EventContext) => {
           this._receiver.removeListener(ReceiverEvents.receiverError, onError);
-          debug(`Error occurred while closing amqp receiver.`, context.session!.error);
+          debug("[%s] Error occurred while closing amqp receiver. %O",
+            this.connection.id, context.session!.error);
           reject(context.session!.error);
         };
 
